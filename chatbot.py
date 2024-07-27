@@ -10,7 +10,8 @@ from pyvi.ViTokenizer import tokenize
 
 # load_dotenv()
 
-pc = Pinecone(api_key=os.getenv("Pinecone_API_KEY"))cloud = os.environ.get("PINECONE_CLOUD") or "aws"
+pc = Pinecone(api_key=os.getenv("Pinecone_API_KEY"))
+cloud = os.environ.get("PINECONE_CLOUD") or "aws"
 region = os.environ.get("PINECONE_REGION") or "us-east-1"
 
 spec = ServerlessSpec(cloud=cloud, region=region)
