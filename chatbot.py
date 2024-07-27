@@ -6,9 +6,9 @@ import time
 from pinecone import Pinecone, ServerlessSpec
 from sentence_transformers import SentenceTransformer
 from pyvi.ViTokenizer import tokenize
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 
-# load_dotenv()
+load_dotenv()
 
 pc = Pinecone(api_key=os.getenv("Pinecone_API_KEY"))
 cloud = os.environ.get("PINECONE_CLOUD") or "aws"
@@ -22,7 +22,8 @@ client = openai.OpenAI(
     api_key=os.getenv("OPENAI_API_KEY")
 )
 # Load the Vietnamese embedding model
-model = SentenceTransformer("dangvantuan/vietnamese-embedding")
+#model = SentenceTransformer("dangvantuan/vietnamese-embedding")
+model = SentenceTransformer('intfloat/multilingual-e5-small')
 
 # Function to get embeddings
 
@@ -47,13 +48,11 @@ def read_sentences_from_file(file_path):
     with open(file_path, "r", encoding="utf-8-sig") as file:
         sentences = file.readlines()
     # Remove any leading/trailing whitespace
-    sentences = [sentence.strip()
-                 for sentence in sentences if sentence.strip()]
+    sentences = [sentence.strip() for sentence in sentences if sentence.strip()]
     return sentences
 
 
-# rag-index, new_rag-index
-def process_and_upsert(sentences, batch_size=100, index_name="new-rag-index"):
+def process_and_upsert(sentences, batch_size=100, index_name="rag-index"):
     print(pc.list_indexes().names())
     if index_name not in pc.list_indexes().names():
         # if does not exist, create index
@@ -68,7 +67,7 @@ def process_and_upsert(sentences, batch_size=100, index_name="new-rag-index"):
         index = pc.Index(index_name)
 
         for i in range(0, len(sentences), batch_size):
-            batch = sentences[i: i + batch_size]
+            batch = sentences[i : i + batch_size]
             embeddings = get_embeddings(batch)
             ids = [str(i + j) for j in range(len(batch))]
             meta_batch = create_meta_batch(batch)
@@ -85,8 +84,7 @@ def process_and_upsert(sentences, batch_size=100, index_name="new-rag-index"):
 # Initialize vector database
 file_path = "data.txt"
 sentences = read_sentences_from_file(file_path)
-index = process_and_upsert(sentences, batch_size=100,
-                           index_name="new-rag-index")
+index = process_and_upsert(sentences, batch_size=100, index_name="rag-index")
 
 # A dictionary to store conversation history for each session
 conversation_history = {}
@@ -156,8 +154,7 @@ def conversational_rag(session_id, question, history):
         time_waited += 20
     if time_waited >= 60 * 5:
         print("Timed out waiting for contexts to be retrieved.")
-        contexts = [
-            "No documents retrieved. Try to answer the question yourself!"]
+        contexts = ["No documents retrieved. Try to answer the question yourself!"]
     for i in range(1, len(contexts)):
         if len("\n".join(contexts[:i])) >= limit:
             prompt = "\n".join(contexts[: i - 1])
