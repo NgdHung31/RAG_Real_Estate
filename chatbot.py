@@ -58,7 +58,7 @@ def process_and_upsert(sentences, batch_size=100, index_name="rag-index"):
         # if does not exist, create index
         pc.create_index(
             index_name,
-            dimension=768,  # dimensionality of text-embedding-ada-002
+            dimension=384,  # dimensionality of text-embedding-ada-002
             metric="cosine",
             spec=spec,
         )
